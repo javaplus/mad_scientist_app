@@ -73,12 +73,12 @@ class _ControlsScreenScreenState extends State<ControlsScreen> {
                     child: Joystick(
                       mode: JoystickMode.horizontalAndVertical,
                       listener: (StickDragDetails stick) {
-                        //debugPrint('Joystick: ${stick.x.toStringAsFixed(5)},${stick.y.toStringAsFixed(5)}');
-
                         double x = swapX ? -stick.x : stick.x;
                         double y = swapY ? -stick.y : stick.y;
-                        MyBluetoothService().writeData(
-                            'move:${x.toStringAsFixed(5)},${y.toStringAsFixed(5)}');
+                        String data =
+                            'move:${x.toStringAsFixed(3)},${y.toStringAsFixed(3)}';
+                        debugPrint('Sending to device: $data');
+                        MyBluetoothService().writeData(data);
                       },
                     ),
                   ),
