@@ -14,9 +14,6 @@ class _HomePageState extends State<HomePage> {
   bool _isBluetoothReady = false;
   final deviceController = TextEditingController();
 
-  static const _bluetoothNotSupportedMessage =
-      'Bluetooth is not supported on this device, does this device even have bluetooth??';
-
   @override
   initState() {
     _initiateBluetooth();
