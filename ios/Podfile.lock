@@ -2,6 +2,8 @@ PODS:
   - Flutter (1.0.0)
   - flutter_native_splash (2.4.3):
     - Flutter
+  - gamepads_ios (0.1.1):
+    - Flutter
   - permission_handler_apple (9.3.0):
     - Flutter
   - universal_ble (0.0.1):
@@ -11,6 +13,7 @@ PODS:
 DEPENDENCIES:
   - Flutter (from `Flutter`)
   - flutter_native_splash (from `.symlinks/plugins/flutter_native_splash/ios`)
+  - gamepads_ios (from `.symlinks/plugins/gamepads_ios/ios`)
   - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
   - universal_ble (from `.symlinks/plugins/universal_ble/darwin`)
 
@@ -19,6 +22,8 @@ EXTERNAL SOURCES:
     :path: Flutter
   flutter_native_splash:
     :path: ".symlinks/plugins/flutter_native_splash/ios"
+  gamepads_ios:
+    :path: ".symlinks/plugins/gamepads_ios/ios"
   permission_handler_apple:
     :path: ".symlinks/plugins/permission_handler_apple/ios"
   universal_ble:
@@ -27,6 +32,7 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
   flutter_native_splash: e8a1e01082d97a8099d973f919f57904c925008a
+  gamepads_ios: 1d2930c7a4450a9a1b57444ebf305a6a6cbeea0b
   permission_handler_apple: 9878588469a2b0d0fc1e048d9f43605f92e6cec2
   universal_ble: cf52a7b3fd2e7c14d6d7262e9fdadb72ab6b88a6
 

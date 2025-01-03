@@ -3,6 +3,7 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
+  gamepads_windows
   permission_handler_windows
   universal_ble
 )

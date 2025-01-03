@@ -1,6 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:flutter_joystick/flutter_joystick.dart';
+import 'package:gamepads/gamepads.dart';
 import 'package:logger/logger.dart';
 import 'package:mad_scientist_app/services/bluetooth_service.dart';
 import 'package:universal_ble/universal_ble.dart';
@@ -19,6 +23,13 @@ class _ControlsScreenScreenState extends State<ControlsScreen> {
   late BleDevice _bleDevice;
   List<BleService> services = [];
 
+  // Mock focus node to listen to keyboard events
+  // Needed incase other text fields are added to the screen
+  final FocusNode _focusNode = FocusNode();
+  final _gamePadDebouncer = Debouncer(milliseconds: 30);
+  late StreamSubscription gamePadEventsSubscription;
+  double _gamePadX = 0, _gamePadY = 0;
+
   Color currentColor = Colors.green;
   late Color pickerColor;
   bool swapX = false;
@@ -28,8 +39,8 @@ class _ControlsScreenScreenState extends State<ControlsScreen> {
   void initState() {
     pickerColor = currentColor;
     _bleDevice = widget.deviceToConnect;
-
     _connectToDevice();
+    gamePadEventsSubscription = Gamepads.events.listen(_onGamePadEvent);
     super.initState();
   }
 
@@ -49,60 +60,197 @@ class _ControlsScreenScreenState extends State<ControlsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Control Shark Rover'),
+        backgroundColor: Colors.lightBlueAccent,
+        title: Text(_bleDevice.name ?? 'Rover Controls'),
+        actions: [
+          _buildSettings(),
+        ],
       ),
       body: _connecting
           ? Center(child: Text("Connecting to device..."))
-          : Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(right: 20),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      _buildReverseSwitch(),
-                      _buildColorPicker(),
-                    ],
-                  ),
-                ),
-                Align(
-                  alignment: Alignment.bottomRight,
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 50, right: 30),
-                    child: Joystick(
-                      mode: JoystickMode.horizontalAndVertical,
-                      listener: (StickDragDetails stick) {
-                        double x = swapX ? -stick.x : stick.x;
-                        double y = swapY ? -stick.y : stick.y;
-                        String data =
-                            'move:${x.toStringAsFixed(3)},${y.toStringAsFixed(3)}';
-                        debugPrint('Sending to device: $data');
-                        MyBluetoothService().writeData(data);
-                      },
-                    ),
-                  ),
-                ),
-              ],
-            ),
+          : _buildControls(),
     );
   }
 
-  Widget _buildReverseSwitch() {
-    return IconButton(
-      icon: Icon(Icons.multiple_stop),
+  Widget _buildControls() {
+    return KeyboardListener(
+      focusNode: _focusNode,
+      autofocus: true,
+      onKeyEvent: _onKeyEvent,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(right: 20, top: 20),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [_buildGameSettings()],
+            ),
+          ),
+          Align(
+            alignment: Alignment.bottomRight,
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 50, right: 30),
+              child: Joystick(
+                mode: JoystickMode.horizontalAndVertical,
+                listener: (StickDragDetails stick) {
+                  _writeXYtoDevice(x: stick.x, y: stick.y);
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGameSettings() {
+    return ElevatedButton.icon(
+      icon: Icon(
+        Icons.gamepad_outlined,
+        color: Colors.white,
+      ),
+      label: Text('Game Mode'),
       onPressed: () {
         showDialog(
+          useSafeArea: true,
           context: context,
           builder: (BuildContext context) {
-            return AlertDialog(
-              content: StatefulBuilder(
+            return StatefulBuilder(
                 builder: (BuildContext context, StateSetter setState) {
-                  return SingleChildScrollView(
-                      child: Column(
+              return AlertDialog(
+                scrollable: true,
+                title: Text('Game Modes'),
+                actions: [
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey,
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: Text('Cancel'),
+                  )
+                ],
+                content: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Select a game mode to play with other rovers'),
+                    Container(
+                      alignment: Alignment.center,
+                      padding: const EdgeInsets.only(top: 12),
+                      child: SizedBox(
+                        width: 240,
+                        height: 240,
+                        child: GridView.count(
+                          crossAxisCount: 2,
+                          shrinkWrap: true,
+                          mainAxisSpacing: 10,
+                          crossAxisSpacing: 10,
+                          children: [
+                            ElevatedButton(
+                              onPressed: () {
+                                debugPrint('Virus mode selected');
+                                MyBluetoothService().writeData('game:virus');
+                                Navigator.of(context).pop();
+                              },
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  //Image.asset('assets/virus.png', height: 50),
+                                  Text('Virus'),
+                                ],
+                              ),
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                debugPrint('Disco mode selected');
+                                MyBluetoothService().writeData('game:disco');
+                                Navigator.of(context).pop();
+                              },
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  //Image.asset('assets/disco.png', height: 50),
+                                  Text('Disco'),
+                                ],
+                              ),
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                debugPrint('Hungry mode selected');
+                                MyBluetoothService().writeData('game:hungry');
+                                Navigator.of(context).pop();
+                              },
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  //Image.asset('assets/hungry.png', height: 50),
+                                  Text('Hungry'),
+                                ],
+                              ),
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                debugPrint('WTF! mode selected');
+                                MyBluetoothService().writeData('game:wtf');
+                                Navigator.of(context).pop();
+                              },
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  //Image.asset('assets/wtf.png', height: 50),
+                                  Text('WTF!'),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            });
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildSettings() {
+    return IconButton(
+      icon: Icon(
+        Icons.settings,
+      ),
+      onPressed: () {
+        showDialog(
+          useSafeArea: true,
+          context: context,
+          builder: (BuildContext context) {
+            return StatefulBuilder(
+              builder: (BuildContext context, StateSetter setState) {
+                return AlertDialog(
+                  scrollable: true,
+                  title: Text('Rover Settings'),
+                  content: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                          'Swap the controls for the joystick incase the motor controls are reversed.'),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Rover RGB Color',
+                            textAlign: TextAlign.left,
+                          ),
+                          _buildColorPicker(),
+                        ],
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 20),
+                        child: Text(
+                            'Swap the controls for the joystick incase the motor controls are reversed.'),
+                      ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -131,18 +279,31 @@ class _ControlsScreenScreenState extends State<ControlsScreen> {
                           ),
                         ],
                       ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Calibrate Photo Resistor'),
+                          IconButton(
+                            icon: Icon(Icons.support_rounded),
+                            onPressed: () {
+                              debugPrint('Calibrating photo resistor');
+                              MyBluetoothService().writeData('calibrate');
+                            },
+                          ),
+                        ],
+                      ),
                     ],
-                  ));
-                },
-              ),
-              actions: <Widget>[
-                ElevatedButton(
-                  child: const Text('Close'),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                ),
-              ],
+                  ),
+                  actions: <Widget>[
+                    ElevatedButton(
+                      child: const Text('Close'),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ],
+                );
+              },
             );
           },
         );
@@ -216,14 +377,92 @@ class _ControlsScreenScreenState extends State<ControlsScreen> {
     );
   }
 
+  // Handler for gamepad events
+  _onGamePadEvent(GamepadEvent event) {
+    //debugPrint('Gamepad event: $event');
+    if (event.key == 'l.joystick - yAxis') {
+      _gamePadY = -event.value;
+    } else if (event.key == 'l.joystick - xAxis') {
+      _gamePadX = event.value;
+    }
+    // simple debouncer does not work great, its debouncing initial values when it shouldnt...
+    // e.g when the joystick is at rest, and you move it, it will debounce the initial value keeping the shark from moving for a period of time
+    // would need a way to record if the value has changed more than a delta
+    // and then send the value to the device
+    // Too low of a debounce timing, will cause commands to queue up which is bad too
+    _gamePadDebouncer.run(() {
+      if (_gamePadX.abs() > _gamePadY.abs()) {
+        _writeXYtoDevice(x: _gamePadX, y: 0);
+      } else {
+        _writeXYtoDevice(x: 0, y: _gamePadY);
+      }
+    });
+  }
+
+  // Handler for keyboard events
+  _onKeyEvent(KeyEvent event) {
+    debugPrint('${event}');
+    double? x;
+    double? y;
+
+    if ([
+      LogicalKeyboardKey.arrowUp,
+      LogicalKeyboardKey.keyW,
+    ].contains(
+      event.logicalKey,
+    )) {
+      y = event is KeyUpEvent ? 0 : -1.0;
+    } else if ([
+      LogicalKeyboardKey.arrowDown,
+      LogicalKeyboardKey.keyS,
+    ].contains(event.logicalKey)) {
+      y = event is KeyUpEvent ? 0 : 1.0;
+    } else if ([
+      LogicalKeyboardKey.arrowLeft,
+      LogicalKeyboardKey.keyA,
+    ].contains(event.logicalKey)) {
+      x = event is KeyUpEvent ? 0 : -1.0;
+    } else if ([
+      LogicalKeyboardKey.arrowRight,
+      LogicalKeyboardKey.keyD,
+    ].contains(event.logicalKey)) {
+      x = event is KeyUpEvent ? 0 : 1.0;
+    }
+
+    if (x != null || y != null) _writeXYtoDevice(x: x ?? 0, y: y ?? 0);
+  }
+
+  // Writes directional movement to the device
+  void _writeXYtoDevice({double x = 0, double y = 0}) {
+    double finalX = swapX ? -x : x;
+    double finalY = swapY ? -y : y;
+    String data =
+        'move:${finalX.toStringAsFixed(3)},${finalY.toStringAsFixed(3)}';
+    debugPrint('Sending to device: $data');
+    MyBluetoothService().writeData(data);
+  }
+
   @override
   void dispose() {
     MyBluetoothService().disconnect();
     UniversalBle.onConnectionChange = null;
+    gamePadEventsSubscription.cancel();
     super.dispose();
   }
 }
 
 int _floatToInt8(double x) {
   return (x * 255.0).round() & 0xff;
+}
+
+class Debouncer {
+  final int milliseconds;
+  Timer? _timer;
+  Debouncer({required this.milliseconds});
+  void run(VoidCallback action) {
+    if (_timer != null) {
+      _timer!.cancel();
+    }
+    _timer = Timer(Duration(milliseconds: milliseconds), action);
+  }
 }
