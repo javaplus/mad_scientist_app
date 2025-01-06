@@ -29,6 +29,7 @@ class _ControlsScreenScreenState extends State<ControlsScreen> {
   final _gamePadDebouncer = Debouncer(milliseconds: 30);
   late StreamSubscription gamePadEventsSubscription;
   double _gamePadX = 0, _gamePadY = 0;
+  bool _buttonPressed = false;
 
   Color currentColor = Colors.green;
   late Color pickerColor;
@@ -90,12 +91,37 @@ class _ControlsScreenScreenState extends State<ControlsScreen> {
           Align(
             alignment: Alignment.bottomRight,
             child: Padding(
-              padding: const EdgeInsets.only(bottom: 50, right: 30),
-              child: Joystick(
-                mode: JoystickMode.horizontalAndVertical,
-                listener: (StickDragDetails stick) {
-                  _writeXYtoDevice(x: stick.x, y: stick.y);
-                },
+              padding: const EdgeInsets.only(bottom: 50, left: 30, right: 30),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  GestureDetector(
+                    onTapDown: (_) {
+                      setState(() {
+                        _buttonPressed = true;
+                        _writeFireToDevice();
+                      });
+                    },
+                    onTapUp: (_) {
+                      setState(() {
+                        _buttonPressed = false;
+                      });
+                    },
+                    child: Image.asset(
+                      _buttonPressed
+                          ? 'assets/shark_button/down.png'
+                          : 'assets/shark_button/up.png',
+                      height: 100,
+                      width: 100,
+                    ),
+                  ),
+                  Joystick(
+                    mode: JoystickMode.horizontalAndVertical,
+                    listener: (StickDragDetails stick) {
+                      _writeXYtoDevice(x: stick.x, y: stick.y);
+                    },
+                  ),
+                ],
               ),
             ),
           ),
@@ -384,6 +410,8 @@ class _ControlsScreenScreenState extends State<ControlsScreen> {
       _gamePadY = -event.value;
     } else if (event.key == 'l.joystick - xAxis') {
       _gamePadX = event.value;
+    } else if (event.key == 'button - 0') {
+      _writeFireToDevice();
     }
     // simple debouncer does not work great, its debouncing initial values when it shouldnt...
     // e.g when the joystick is at rest, and you move it, it will debounce the initial value keeping the shark from moving for a period of time
@@ -427,9 +455,20 @@ class _ControlsScreenScreenState extends State<ControlsScreen> {
       LogicalKeyboardKey.keyD,
     ].contains(event.logicalKey)) {
       x = event is KeyUpEvent ? 0 : 1.0;
+    } else if (event.logicalKey == LogicalKeyboardKey.space) {
+      _writeFireToDevice();
+      setState(() {
+        _buttonPressed = event is KeyDownEvent;
+      });
     }
 
     if (x != null || y != null) _writeXYtoDevice(x: x ?? 0, y: y ?? 0);
+  }
+
+  void _writeFireToDevice() {
+    String data = 'fire';
+    debugPrint('Sending to device: $data');
+    MyBluetoothService().writeData(data);
   }
 
   // Writes directional movement to the device
