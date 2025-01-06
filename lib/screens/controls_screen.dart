@@ -63,7 +63,7 @@ class _ControlsScreenScreenState extends State<ControlsScreen> {
         backgroundColor: Colors.lightBlueAccent,
         title: Text(_bleDevice.name ?? 'Rover Controls'),
         actions: [
-          _buildSettings(),
+          if (!_connecting) _buildSettings(),
         ],
       ),
       body: _connecting
