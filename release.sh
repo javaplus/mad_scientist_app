@@ -38,7 +38,7 @@ new_version=$(increment_version $current_version $part)
 new_build_number=$(increment_build_number $current_build_number)
 
 # Update pubspec.yaml with new version and build number
-#sed -i '' "s/^version: .*/version: $new_version+$new_build_number/" pubspec.yaml
+sed -i '' "s/^version: .*/version: $new_version+$new_build_number/" pubspec.yaml
 
 echo "Updated version to $new_version and build number to $new_build_number"
 
