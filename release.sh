@@ -108,7 +108,12 @@ read upload_to_app_store
 if [ "$upload_to_app_store" == "yes" ]; then
     # Upload the IPA to Transporter app
     echo "Uploading IPA to Transporter app..."
-    xcrun altool --upload-app --type ios --file build/ios/ipa/*.ipa --username "greg@shaykos.com" --password "ksxf-dyqp-ftdf-qsyk"
+    # Retrieve the password from the keychain
+    app_store_password=$(security find-generic-password -s "app_store_password" -w)
+
+    # Retrieve the password from the Passwords app
+    app_store_password=$(security find-generic-password -a "greg@shaykos.com" -s "AppStoreUpload" -w)
+    xcrun altool --upload-app --type ios --file build/ios/ipa/*.ipa --username "greg@shaykos.com" --password "$app_store_password"
 
     echo "IPA uploaded to Transporter app successfully."
 fi
