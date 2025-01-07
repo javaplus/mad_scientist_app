@@ -61,7 +61,6 @@ class _ControlsScreenScreenState extends State<ControlsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.lightBlueAccent,
         title: Text(_bleDevice.name ?? 'Rover Controls'),
         actions: [
           if (!_connecting) _buildSettings(),
