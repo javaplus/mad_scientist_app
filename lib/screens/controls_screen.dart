@@ -7,6 +7,7 @@ import 'package:flutter_joystick/flutter_joystick.dart';
 import 'package:gamepads/gamepads.dart';
 import 'package:logger/logger.dart';
 import 'package:mad_scientist_app/services/bluetooth_service.dart';
+import 'package:mad_scientist_app/services/storage_service.dart';
 import 'package:universal_ble/universal_ble.dart';
 
 class ControlsScreen extends StatefulWidget {
@@ -21,6 +22,7 @@ class ControlsScreen extends StatefulWidget {
 class _ControlsScreenScreenState extends State<ControlsScreen> {
   bool _connecting = true;
   late BleDevice _bleDevice;
+
   List<BleService> services = [];
 
   // Mock focus node to listen to keyboard events
@@ -31,15 +33,16 @@ class _ControlsScreenScreenState extends State<ControlsScreen> {
   double _gamePadX = 0, _gamePadY = 0;
   bool _buttonPressed = false;
 
+  // Settings
+  late DeviceSettings deviceSettings;
   Color currentColor = Colors.green;
   late Color pickerColor;
-  bool swapX = false;
-  bool swapY = false;
 
   @override
   void initState() {
     pickerColor = currentColor;
     _bleDevice = widget.deviceToConnect;
+    deviceSettings = StorageService().getDeviceSettings(_bleDevice.deviceId);
     _connectToDevice();
     gamePadEventsSubscription = Gamepads.events.listen(_onGamePadEvent);
     super.initState();
@@ -281,10 +284,11 @@ class _ControlsScreenScreenState extends State<ControlsScreen> {
                         children: [
                           Text('Swap Left/Right'),
                           Switch(
-                            value: swapX,
+                            value: deviceSettings.swapX,
                             onChanged: (value) {
                               setState(() {
-                                swapX = value;
+                                deviceSettings = deviceSettings.copyWithAndSave(
+                                    swapX: value);
                               });
                             },
                           ),
@@ -295,10 +299,11 @@ class _ControlsScreenScreenState extends State<ControlsScreen> {
                         children: [
                           Text('Swap Front/Back'),
                           Switch(
-                            value: swapY,
+                            value: deviceSettings.swapY,
                             onChanged: (value) {
                               setState(() {
-                                swapY = value;
+                                deviceSettings = deviceSettings.copyWithAndSave(
+                                    swapY: value);
                               });
                             },
                           ),
@@ -428,7 +433,7 @@ class _ControlsScreenScreenState extends State<ControlsScreen> {
 
   // Handler for keyboard events
   _onKeyEvent(KeyEvent event) {
-    debugPrint('${event}');
+    debugPrint('$event');
     double? x;
     double? y;
 
@@ -472,8 +477,8 @@ class _ControlsScreenScreenState extends State<ControlsScreen> {
 
   // Writes directional movement to the device
   void _writeXYtoDevice({double x = 0, double y = 0}) {
-    double finalX = swapX ? -x : x;
-    double finalY = swapY ? -y : y;
+    double finalX = deviceSettings.swapX ? -x : x;
+    double finalY = deviceSettings.swapY ? -y : y;
     String data =
         'move:${finalX.toStringAsFixed(3)},${finalY.toStringAsFixed(3)}';
     debugPrint('Sending to device: $data');

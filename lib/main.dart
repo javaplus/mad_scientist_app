@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mad_scientist_app/services/storage_service.dart';
 import 'screens/home_screen.dart';
 
 Brightness brighntess = Brightness.light;
@@ -14,6 +15,12 @@ ColorScheme appColorScheme = ColorScheme.fromSeed(
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   Logger.level = Level.all;
+
+  // Combined await to allow multiple items to load,
+  // NOTHING SHOULD BE DEPENDENT ON EACHOTHER HERE
+  await Future.wait(<Future>[
+    StorageService().initializeSorageRepository(),
+  ]);
 
   runApp(const MyApp());
 }
