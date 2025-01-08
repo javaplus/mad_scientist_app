@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
-
-import 'screens/homepage.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'screens/home_screen.dart';
+
+Brightness brighntess = Brightness.light;
 
 // Primary color scheme for the app
 ColorScheme appColorScheme = ColorScheme.fromSeed(
+  brightness: brighntess,
   seedColor: Color(0x002d549d),
 );
 
@@ -26,6 +28,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Mad Scientist App',
       theme: ThemeData(
+        brightness: brighntess,
         textTheme: GoogleFonts.anonymousProTextTheme(),
         colorScheme: appColorScheme,
         useMaterial3: true,
@@ -46,7 +49,7 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      home: const HomePage(),
+      home: HomeScreen(),
     );
   }
 }

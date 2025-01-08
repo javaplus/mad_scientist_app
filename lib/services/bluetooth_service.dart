@@ -39,7 +39,10 @@ class MyBluetoothService {
   /// Attempt to connect to and enable the bluetooth adapter.
   /// Must be done before any bluetooth capabilities can be used.
   /// callback can be supplied for when the availability changes.
-  Future<void> initBLE(Function(MyBleState) callback) async {
+  Future<void> initBLE(
+    Function(MyBleState) callback, {
+    Duration timeout = const Duration(seconds: 30),
+  }) async {
     bleStateCallback = callback;
 
     // Check for android permissions...
@@ -58,7 +61,8 @@ class MyBluetoothService {
         debugPrint("Failed to enable Android bluetooth: $e");
       }
     }
-    AvailabilityState state = await getBluetoothAvailability();
+    AvailabilityState state = await getBluetoothAvailability()
+        .timeout(timeout, onTimeout: () => AvailabilityState.unknown);
     callback(MyBleState.fromAvailabilityState(state));
   }
 
