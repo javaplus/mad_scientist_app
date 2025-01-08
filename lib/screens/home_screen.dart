@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mad_scientist_app/screens/controls_screen.dart';
 import 'package:mad_scientist_app/services/bluetooth_service.dart';
@@ -29,6 +30,7 @@ class _HomeScreenState extends State<HomeScreen>
   // 3. Bluetooth is scanning for devices
   bool _bluetoothInitiating = true;
   bool _isBluetoothReady = false;
+  bool _triggerBluetoothManually = false;
   bool _isScanning = false;
   bool _scanTimedOut = false;
   late Timer _scanTimeoutTimer;
@@ -39,13 +41,17 @@ class _HomeScreenState extends State<HomeScreen>
 
   @override
   void initState() {
+    if (kIsWeb) {
+      _triggerBluetoothManually = true;
+    }
+
     // Initialize the bluetooth service and obtain a callback for when the state changes
     MyBluetoothService().initBLE((MyBleState state) {
       setState(() {
         _bluetoothInitiating = false;
         _isBluetoothReady = (state == MyBleState.poweredOn);
       });
-      if (_isBluetoothReady) {
+      if (!_triggerBluetoothManually && _isBluetoothReady) {
         _scanForDevices();
       }
     });
@@ -170,19 +176,28 @@ class _HomeScreenState extends State<HomeScreen>
                     ),
                   ),
                   Expanded(child: SizedBox.shrink()),
-                  CupertinoSwitch(
-                    activeTrackColor: blueToothBlue,
-                    value: _isScanning,
-                    onChanged: (bool value) {
-                      setState(() {
-                        if (value) {
-                          _scanForDevices();
-                        } else {
-                          _stopScan();
-                        }
-                      });
-                    },
-                  ),
+                  _triggerBluetoothManually
+                      ? IconButton(
+                          icon: Icon(Icons.search, color: blueToothBlue),
+                          onPressed: () {
+                            setState(() {
+                              _scanForDevices();
+                            });
+                          },
+                        )
+                      : CupertinoSwitch(
+                          activeTrackColor: blueToothBlue,
+                          value: _isScanning,
+                          onChanged: (bool value) {
+                            setState(() {
+                              if (value) {
+                                _scanForDevices();
+                              } else {
+                                _stopScan();
+                              }
+                            });
+                          },
+                        ),
                 ],
               ),
               // INPUT: Find device by name
