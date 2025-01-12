@@ -46,6 +46,12 @@ class _ControlsScreenScreenState extends State<ControlsScreen> {
     _connectToDevice();
     gamePadEventsSubscription = Gamepads.events.listen(_onGamePadEvent);
     super.initState();
+
+    // Force landscape for development
+    // SystemChrome.setPreferredOrientations([
+    //   DeviceOrientation.landscapeRight,
+    //   DeviceOrientation.landscapeLeft,
+    // ]);
   }
 
   _connectToDevice() async {
@@ -118,6 +124,7 @@ class _ControlsScreenScreenState extends State<ControlsScreen> {
                     ),
                   ),
                   Joystick(
+                    includeInitialAnimation: false,
                     mode: JoystickMode.horizontalAndVertical,
                     listener: (StickDragDetails stick) {
                       _writeXYtoDevice(x: stick.x, y: stick.y);
@@ -274,15 +281,15 @@ class _ControlsScreenScreenState extends State<ControlsScreen> {
                           _buildColorPicker(),
                         ],
                       ),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 20),
-                        child: Text(
-                            'Swap the controls for the joystick incase the motor controls are reversed.'),
-                      ),
+                      // Padding(
+                      //   padding: const EdgeInsets.only(top: 20),
+                      //   child: Text(
+                      //       'Swap the controls for the joystick incase the motor controls are reversed.'),
+                      // ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('Swap Left/Right'),
+                          Text('Swap ⬅️➡️ controls'),
                           Switch(
                             value: deviceSettings.swapX,
                             onChanged: (value) {
@@ -297,7 +304,7 @@ class _ControlsScreenScreenState extends State<ControlsScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('Swap Front/Back'),
+                          Text('Swap ⬆️⬇️ controls'),
                           Switch(
                             value: deviceSettings.swapY,
                             onChanged: (value) {
@@ -319,6 +326,73 @@ class _ControlsScreenScreenState extends State<ControlsScreen> {
                               debugPrint('Calibrating photo resistor');
                               MyBluetoothService().writeData('calibrate');
                             },
+                          ),
+                        ],
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 12.0),
+                        child: Text('Photo Resistor Sensitivity'),
+                      ),
+                      Row(
+                        children: [
+                          Text('${deviceSettings.resistorSensitivity}'),
+                          Expanded(
+                            child: Slider(
+                              value:
+                                  deviceSettings.resistorSensitivity.toDouble(),
+                              min: 1,
+                              max: 10,
+                              divisions: 9,
+                              label:
+                                  deviceSettings.resistorSensitivity.toString(),
+                              onChanged: (double value) {
+                                setState(() {
+                                  deviceSettings =
+                                      deviceSettings.copyWithAndSave(
+                                    resistorSensitivity: value.toInt(),
+                                  );
+                                });
+
+                                MyBluetoothService()
+                                    .writeData('sensitivity:${value.toInt()}');
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      Padding(
+                        padding: const EdgeInsets.only(top: 12.0),
+                        child: Text(
+                            'Trim Adjustment (${deviceSettings.trimAdjustment.toInt()})'),
+                      ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Slider(
+                              value: deviceSettings.trimAdjustment,
+                              min: -10,
+                              max: 10,
+                              divisions: 20,
+                              label: (deviceSettings.trimAdjustment > 0
+                                      ? '+'
+                                      : '') +
+                                  deviceSettings.trimAdjustment
+                                      .toInt()
+                                      .toString(),
+                              activeColor:
+                                  Theme.of(context).colorScheme.tertiary,
+                              onChanged: (double value) {
+                                setState(() {
+                                  deviceSettings =
+                                      deviceSettings.copyWithAndSave(
+                                    trimAdjustment: value.roundToDouble(),
+                                  );
+                                });
+                                MyBluetoothService()
+                                    .writeData('trim:${value.toInt()}');
+                              },
+                            ),
                           ),
                         ],
                       ),

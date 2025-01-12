@@ -68,22 +68,33 @@ class DeviceSettings {
   final String deviceId;
   final bool swapX;
   final bool swapY;
+  final int resistorSensitivity;
+  final double trimAdjustment;
+
+  static const int DEFAULT_RESISTOR_SENSITIVITY = 5;
+  static const double DEFAULT_TRIM_ADJUSTMENT = 0.0;
 
   DeviceSettings({
     required this.deviceId,
     this.swapX = false,
     this.swapY = false,
+    this.resistorSensitivity = DEFAULT_RESISTOR_SENSITIVITY,
+    this.trimAdjustment = DEFAULT_TRIM_ADJUSTMENT,
   });
 
   DeviceSettings copyWith({
     String? deviceId,
     bool? swapX,
     bool? swapY,
+    int? resistorSensitivity,
+    double? trimAdjustment,
   }) {
     return DeviceSettings(
       deviceId: deviceId ?? this.deviceId,
       swapX: swapX ?? this.swapX,
       swapY: swapY ?? this.swapY,
+      resistorSensitivity: resistorSensitivity ?? this.resistorSensitivity,
+      trimAdjustment: trimAdjustment ?? this.trimAdjustment,
     );
   }
 
@@ -91,11 +102,15 @@ class DeviceSettings {
     String? deviceId,
     bool? swapX,
     bool? swapY,
+    int? resistorSensitivity,
+    double? trimAdjustment,
   }) {
     DeviceSettings updatedSettings = copyWith(
       deviceId: deviceId,
       swapX: swapX,
       swapY: swapY,
+      resistorSensitivity: resistorSensitivity,
+      trimAdjustment: trimAdjustment,
     );
     StorageService().saveDeviceSettings(updatedSettings);
     return updatedSettings;
@@ -105,11 +120,16 @@ class DeviceSettings {
         'deviceId': deviceId,
         'swapX': swapX,
         'swapY': swapY,
+        'resistorSensitivity': resistorSensitivity,
+        'trimAdjustment': trimAdjustment,
       };
 
   factory DeviceSettings.fromJson(Map<String, dynamic> json) => DeviceSettings(
         deviceId: json['deviceId'],
-        swapX: json['swapX'],
-        swapY: json['swapY'],
+        swapX: json['swapX'] ?? false,
+        swapY: json['swapY'] ?? false,
+        resistorSensitivity:
+            json['resistorSensitivity'] ?? DEFAULT_RESISTOR_SENSITIVITY,
+        trimAdjustment: json['trimAdjustment'] ?? DEFAULT_TRIM_ADJUSTMENT,
       );
 }
