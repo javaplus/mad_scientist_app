@@ -61,6 +61,13 @@ class _ControlsScreenScreenState extends State<ControlsScreen> {
       // TODO: POP AN ALERT FOR FAILED CONNECTION....
       Logger().e("Failed to connect to device $_bleDevice", error: e);
     }
+
+    // let rover know of any saved values
+    MyBluetoothService()
+        .writeData('sensitivity:${deviceSettings.resistorSensitivity}');
+    MyBluetoothService()
+        .writeData('trim:${deviceSettings.trimAdjustment.toInt()}');
+
     setState(() {
       _connecting = false;
     });
@@ -353,8 +360,8 @@ class _ControlsScreenScreenState extends State<ControlsScreen> {
                                   );
                                 });
 
-                                MyBluetoothService()
-                                    .writeData('sensitivity:${value.toInt()}');
+                                MyBluetoothService().writeData(
+                                    'sensitivity:${deviceSettings.resistorSensitivity}');
                               },
                             ),
                           ),
@@ -389,8 +396,8 @@ class _ControlsScreenScreenState extends State<ControlsScreen> {
                                     trimAdjustment: value.roundToDouble(),
                                   );
                                 });
-                                MyBluetoothService()
-                                    .writeData('trim:${value.toInt()}');
+                                MyBluetoothService().writeData(
+                                    'trim:${deviceSettings.trimAdjustment.toInt()}');
                               },
                             ),
                           ),

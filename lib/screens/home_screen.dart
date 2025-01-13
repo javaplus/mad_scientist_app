@@ -367,7 +367,9 @@ class _HomeScreenState extends State<HomeScreen>
 
   _stopScan() {
     UniversalBle.stopScan();
-    _isScanning = false;
+    setState(() {
+      _isScanning = false;
+    });
     _scanTimeoutTimer.cancel();
   }
 
