@@ -63,6 +63,9 @@ The "Virus" game starts your shark with blue eyes and moving at full speed.  Whe
 
 Get ready to boogie! In this high-energy mode, getting tagged triggers a dazzling disco fever. Your shark will go into a spinning frenzy while your RGB lights erupt in a vibrant rave show. It's a party in the laser tag arena, even if you're temporarily out of the action. 
 
+#### Hungry 
+
+Currenty Not Implemented. Does nothing... Do NOT Recommend hitting this game mode... You probably still will try, but, hey, at least we warned you. 
 
 #### WTF
 
