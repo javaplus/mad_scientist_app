@@ -36,7 +36,7 @@ Once you see your shark in the list, click the "Connect" button to the right of 
 
 
 
-Once connected, the main screen has virtual joystick at the bottom right to move the shark rover.  The Joystick is proportional, that is, the further you move the stick the faster the rover will move.  So, for slow movement, just barely move the stick from the center position. 
+Once connected, the main screen has a virtual joystick at the bottom right to move the shark rover.  The Joystick is proportional, that is, the further you move the stick the faster the rover will move.  So, for slow movement, just barely move the stick from the center position. For fastest movement drag the stick the furthest from the center.
 
 At the bottom left, is the fire button (button with the shark head).  This button usually turns the laser on. Depending on the Game Mode selected, the fire button when pressed may fire the laser for a few seconds before automatically turning off.  However, the Game Mode selected ultimately controls what the fire button does.
 
@@ -54,14 +54,20 @@ If you need to change the direction your shark goes when you use the virtual joy
 
   <img src="images/Settings.png" alt="Settings" width="300" />
 
-These settings allo
-
 ### Game Modes
 
+#### Virus
 The "Virus" game starts your shark with blue eyes and moving at full speed.  When your shark is "hit", then your shark's eyes turn green like a zombie and then your movement is slowed.  The idea is that you have many sharks playing this game and they start out as "Not infected" and then you pick one or two sharks to be the "zombies" and they try to "infect" the others by shooting them.  The last shark left with blue eyes wins or when the time ends.  The non infected sharks can shoot and if they score a hit on a zombie shark, then it spins out of control for a second or two before being able to move again.  Any shot to a non infected shark turns it into a zombie.
 
-More to come...
+#### Disco
 
+Get ready to boogie! In this high-energy mode, getting tagged triggers a dazzling disco fever. Your shark will go into a spinning frenzy while your RGB lights erupt in a vibrant rave show. It's a party in the laser tag arena, even if you're temporarily out of the action. 
+
+
+#### WTF
+
+WTF Mode - "Whatever the fantastic" idea is you have for a game mode can go here! If you edit the [wtfgame.py](https://github.com/javaplus/MadScientist/blob/main/code/wtfgame.py) file in your Shark, then it will run that code when you switch to the WTF game mode.
+Learn how to edit the game modes by looking a the [Game mode tutorial](https://github.com/javaplus/MadScientist/blob/main/lessons/game_mode_coding.md). 
 
 ## Administrative stuff:
 
