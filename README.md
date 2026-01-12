@@ -54,6 +54,25 @@ If you need to change the direction your shark goes when you use the virtual joy
 
   <img src="images/Settings.png" alt="Settings" width="300" />
 
+#### RGB Color
+You can change the color of the shark's eyes with this option.
+
+#### Swap <- -> Controls  
+Swap the direction the shark rover turns when you move the joystick.  If the shark turns right when pushing left, toggle this option.
+
+#### Swap ^ v Controls  
+If the shark goes backwards when you move the joystick forward, toggle this option.
+
+#### Calibrate Photo Resistor  
+If your shark keeps detecting a "hit" when it shouldn't, you may want to hit this option to have it immediately recalibrate the base level for a hit.  A "hit" is whenever the photoresistor detects a significant increase of light from the base value.  When the shark is powered on, it calibrates the base value to whatever the current light level is.  So, if you turn it on in a low light area and then move to an area with more light, it could detect a hit.  So, using this Calibrate option, will force it to set a new base level with the current light levels.
+
+#### Photo Resistor Sensitivity  
+This setting determines how much of an increase in light triggers a "hit".  A higher value should increase the amount of light required to trigger a "hit".  A lower value requires less light to trigger a hit.  Adjust this based on the light where you are operating your shark to get the best performance. "Best performance" typically means your shark triggers a "hit" when another shark's laser hits your shark's tail.
+
+
+#### Trim Adjustment   
+When moving your shark forward or backward, if you notice it does not go in a straight line, but veers to one side or the other, this can be used to change the power distribution from the right or left sides when moving forward or backwards to keep your shark moving straight.  NOTE: Moving the slider to one side does not mean the shark will move more to that side.  Direction of the motors is hard to determine because of so many variables (way it's wired, way it's connected, and your "swap options"), therefore, you just have to test out different trim settings to get your shark to move straight.  If you slide the trim fully to one side and then try to drive your shark straight forward, it should be pretty obvious which direction it's trimming the shark.  From there, you can make smaller adjustments in the appropriate direction with the trim to get it going nice and straight.
+
 ### Game Modes
 
 #### Virus
